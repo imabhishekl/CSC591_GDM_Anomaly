@@ -26,16 +26,9 @@ class Anomaly:
 		file_name = self.file_list[index]
 		graph_file = open(self.file_path + file_name)
 		edges = graph_file.read().splitlines()
-		self.vertices = []
-
-		for edge in edges:
-			v = edge.split(" ")
-			if v[0] not in self.vertices:
-				self.vertices.append(int(v[0]))
-			if v[1] not in self.vertices:
-				self.vertices.append(int(v[1]))
-		
-		self.edge_lists = map(lambda x:(int(x.split(" ")[0]),int(x.split(" ")[1])),edges)
+		self.vertices = range(int(edges[0].split(" ")[0]))
+			
+		self.edge_lists = map(lambda x:(int(x.split(" ")[0]),int(x.split(" ")[1])),edges[1:])
 		print self.vertices
 		print self.edge_lists
 
