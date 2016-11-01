@@ -15,6 +15,7 @@ class Anomaly:
 	vertices = None
 	index = 0
 	file_list_size = None
+	groups = None
 
 	def __init__(self,file_path):
 		self.file_path = file_path
@@ -47,14 +48,17 @@ class Anomaly:
 		self.loadEdgeVertices(self.index + 1)
 		G2 = nx.Graph()
 		G2.add_nodes_from(self.vertices)
-		G2.add_edges_from(self.edge_lists)		
+		G2.add_edges_from(self.edge_lists)
+		if self.index==0:
+			self.groups = self.makeGroups(self.vertices)
+
 		self.index = self.index + 1
 		A1,D1,max1 = self.makeDiagonal(G1)
 		A2,D2,max2 = self.makeDiagonal(G2)
 		#print type(A1),type(D1)
-		results.extend( self.getSimilarityScore(D1,A1,D2,A2,max1,max2,self.vertices)  )
+		results.append( self.getSimilarityScore(D1,A1,D2,A2,max1,max2,self.groups)  )
 		#print self.getSimilarityScore(D1,A1,D2,A2,max1,max2,self.vertices)
-		#print results[-1]
+		print results[-1]
 		return True
 
 	def makeDiagonal(self,G):
@@ -76,21 +80,22 @@ class Anomaly:
 		threshold = int(np.sqrt(len(vertex)))
 		g = rm.randint(threshold / 2, threshold)
 		groups = [list() for x in xrange(g)]
-		print g
+		#print g
 		for elem in vertex:
 			groups[rm.randint(0, g - 1)].append(elem)
 
 		return groups
 
-	def getSimilarityScore(self, diag1, adj1, diag2, adj2, epsilon1, epsilon2, vertex):
-		groups = self.makeGroups(vertex)
+	def getSimilarityScore(self, diag1, adj1, diag2, adj2, epsilon1, epsilon2, groups):
+		#groups = self.makeGroups(vertex)
 		#print diag1.shape
 		A1 = identity(diag1.shape[0]) + ((epsilon1 * epsilon1) * diag1) - (epsilon1 * adj1)
 		#print diag2.shape
 		A2 = identity(diag2.shape[0]) + ((epsilon2 * epsilon2) * diag2) - (epsilon2 * adj2)
 		#print A2.shape
 		rootedDist = 0.0
-		N = len(vertex)
+		N = diag1.shape[0]
+		#N = len(vertex)
 		# Commented out matrix creation as maybe not needed to get Similarity Score
 		# S1= list()
 		# S2= list()
@@ -102,7 +107,7 @@ class Anomaly:
 			_s1 = spsolve(A1, groupCol)
 			_s2 = spsolve(A2, groupCol)
 			rootedDist += sum([pow(np.sqrt(x) - np.sqrt(y), 2) for x, y in zip(_s1, _s2)])
-			print rootedDist
+			#print rootedDist
 			# S1.append(_s1)
 			# S2.append(_s2)
 		# S1 = matrix(S1).T
@@ -117,7 +122,7 @@ def main():
 	global results
 	results = list()
 	#dirPath = "/home/abhishek/Downloads/anomaly/datasets/datasets/enron_by_day/"
-	dirPath = '/home/raunaq/College/GDM/project4/anomaly/datasets/datasets/p2p-Gnutella/'
+	dirPath = '/home/raunaq/College/GDM/project4/anomaly/datasets/datasets/autonomous/'
 	if len(sys.argv)>1:
 		dirPath = str(sys.argv[1])
 	a = Anomaly(dirPath)
@@ -126,7 +131,7 @@ def main():
 		pass
 
 	fname = dirPath.split("/")[-2]
-	fname = fname + "_time_series.txt"
+	fname = '/home/raunaq/College/GDM/project4/'+fname + "_time_series.txt"
 	fp = open(fname, 'w+')
 	#print results
 	for elem in results:
