@@ -47,9 +47,23 @@ class Anomaly:
 		self.loadEdgeVertices(self.index + 1)
 		G2 = nx.Graph()
 		G2.add_nodes_from(self.vertices)
-		G2.add_edges_from(self.edge_lists)
-		self.loadEdgeVertices(self.index + 1)
-		index = index + 1
+		G2.add_edges_from(self.edge_lists)		
+		self.index = self.index + 1
+		A1,D1,max1 = makeDiagonal(G1)
+		A2,D2,max2 = makeDiagonal(G2)
+
+	def makeDiagonal(self,G):
+		A = nx.adjacency_matrix(G)
+		D,max_degree = self.getDegreeMat(np.zeros((len(G.nodes()),len(G.nodes())),dtype=int),nx.degrees(G))
+		return A,D,max_degree
+
+	def getDegreeMat(self,zero,degree):
+		key_list = sorted(degree.keys())
+		max_degree = max(degree.values())
+		for key in key_list:
+			zero[count][count] = degree[key]
+			count = count + 1
+		return zero,max_degree
 
 def compare(file1,file2):
 	return int(file1.split('_')[0]) - int(file2.split('_')[0])
