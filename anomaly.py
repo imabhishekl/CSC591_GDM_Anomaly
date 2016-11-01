@@ -50,8 +50,7 @@ class Anomaly:
 		self.index = self.index + 1
 		A1,D1,max1 = self.makeDiagonal(G1)
 		A2,D2,max2 = self.makeDiagonal(G2)
-		ep = min([max1,max2])
-		results.append( self.getSimilarityScore(D1,A1,D2,A2,max1,max2,self.vertices)  )
+		results.extend( self.getSimilarityScore(D1,A1,D2,A2,max1,max2,self.vertices)  )
 		#print results[-1]
 		return True
 
@@ -116,6 +115,11 @@ def main():
 	a.load_filename()
 	while a.makeGraph():
 		pass
+	fp = open('results.txt','w+')
+	print results
+	for elem in results:
+		fp.write(str(elem)+'\n')
+	fp.close()
 
 if __name__ == '__main__':
 	main()
