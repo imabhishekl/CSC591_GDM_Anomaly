@@ -8,6 +8,8 @@ class Anomaly:
 	file_list = None
 	edge_lists = None
 	vertices = None
+	index = 0
+	file_list_size = None
 
 	def __init__(self,file_path):
 		self.file_path = file_path
@@ -19,7 +21,7 @@ class Anomaly:
 			print self.file_list
 
 	def loadEdgeVertices(self,index):
-		if index == file_list_size:
+		if self.index == self.file_list_size:
 			return
 		file_name = self.file_list[index]
 		graph_file = open(self.file_path + file_name)
@@ -38,8 +40,8 @@ class Anomaly:
 		print self.edge_lists
 
 	def makeGraph(self):
-		if self.index == file_list_size:
-			return
+		if self.index == self.file_list_size:
+			return False
 		self.loadEdgeVertices(self.index)
 		G1 = nx.Graph()
 		G1.add_nodes_from(self.vertices)
@@ -49,21 +51,23 @@ class Anomaly:
 		G2.add_nodes_from(self.vertices)
 		G2.add_edges_from(self.edge_lists)		
 		self.index = self.index + 1
-		A1,D1,max1 = makeDiagonal(G1)
-		A2,D2,max2 = makeDiagonal(G2)
+		A1,D1,max1 = self.makeDiagonal(G1)
+		A2,D2,max2 = self.makeDiagonal(G2)
+		return True
 
 	def makeDiagonal(self,G):
 		A = nx.adjacency_matrix(G)
-		D,max_degree = self.getDegreeMat(np.zeros((len(G.nodes()),len(G.nodes())),dtype=int),nx.degrees(G))
+		D,max_degree = self.getDegreeMat(np.zeros((len(G.nodes()),len(G.nodes())),dtype=int),nx.degree(G))
 		return A,D,max_degree
 
 	def getDegreeMat(self,zero,degree):
 		key_list = sorted(degree.keys())
 		max_degree = max(degree.values())
+		count = 0
 		for key in key_list:
 			zero[count][count] = degree[key]
 			count = count + 1
-		return zero,max_degree
+		return zero,float(1/float(1 + max_degree))
 
 def compare(file1,file2):
 	return int(file1.split('_')[0]) - int(file2.split('_')[0])
