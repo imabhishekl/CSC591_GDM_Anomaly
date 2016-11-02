@@ -49,10 +49,16 @@ class Anomaly:
 		"""
 		if self.index == self.file_list_size - 1:
 			return False
+		"""
+		Loading data and creating first graph of Pair
+		"""
 		self.loadEdgeVertices(self.index)
 		G1 = nx.Graph()
 		G1.add_nodes_from(self.vertices)
 		G1.add_edges_from(self.edge_lists)
+		"""
+		Loading data and creating second graph of Pair
+		"""
 		self.loadEdgeVertices(self.index + 1)
 		G2 = nx.Graph()
 		G2.add_nodes_from(self.vertices)
@@ -81,6 +87,7 @@ class Anomaly:
 	def getDegreeMat(self,zero,degree):
 		key_list = sorted(degree.keys())
 		max_degree = max(degree.values())
+		#Creating degree matrix and setting values of diagonal
 		zero.setdiag(key_list)
 		return zero,float(1/float(1 + max_degree))
 
@@ -109,17 +116,20 @@ class Anomaly:
 		:return: Similarity score of two graphs
 		"""
 		groups = self.makeGroups(vertex)
+		#Computes left hand static side of equation Ax=B
 		A1 = identity(diag1.shape[0]) + ((epsilon1 * epsilon1) * diag1) - (epsilon1 * adj1)
 		A2 = identity(diag2.shape[0]) + ((epsilon2 * epsilon2) * diag2) - (epsilon2 * adj2)
 		rootedDist = 0.0
 		N = len(vertex)
 
 		for group in groups:
+			#Generating s0k base RHS of equation
 			group = set(group)
 			groupRow = [1 if index in group else 0 for index in xrange(N)]
 			groupCol = csr_matrix(groupRow).T
 			_s1 = spsolve(A1, groupCol)
 			_s2 = spsolve(A2, groupCol)
+			#summation of  (sqrt(Xi) - sqrt(Yi))^2
 			rootedDist += sum([pow(np.sqrt(x) - np.sqrt(y), 2) for x, y in zip(_s1, _s2)])
 
 		rootedDist = np.sqrt(rootedDist)
